@@ -11,6 +11,7 @@ type RecipientsDisplayProps = {
 const RecipientsWrapper = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between; // Added to align items correctly
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
