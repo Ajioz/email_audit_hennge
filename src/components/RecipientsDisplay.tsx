@@ -59,9 +59,8 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i]
       const emailWidth = measureTextWidth(email, wrapperRef.current)
-
       // Only add full email addresses that fit
-      if (usedWidth + emailWidth <= availableWidth) {
+      if (usedWidth + emailWidth <= availableWidth || (i === 0 && usedWidth + emailWidth + measureTextWidth('...', wrapperRef.current) <= availableWidth)) {
         visibleRecipients.push(email)
         usedWidth += emailWidth
       } else {
