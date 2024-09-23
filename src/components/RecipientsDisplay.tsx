@@ -11,46 +11,33 @@ type RecipientsDisplayProps = {
 const RecipientsWrapper = styled.div`
   display: flex;
   align-items: center;
-  overflow: hidden; // Keep overflow hidden
-  white-space: nowrap; // Ensure no wrapping occurs
-  text-overflow: ellipsis; // Allow ellipsis for overflow
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `
 
 // Tooltip Components
 const TooltipWrapper = styled.div`
-  position: relative;
-  display: inline-block;
-
-  &:hover .tooltip-content {
-    display: block;
-  }
-`
-
-const TooltipContent = styled.div`
-  display: flex; // Ensure flex display
-  align-items: center; // Center alignment
-  position: absolute;
-  top: 8px; // Margin from the top
-  right: 8px; // Margin from the right
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
   background-color: #666;
   color: #f0f0f0;
-  padding: 8px 16px; // Padding
-  border-radius: 24px; // Border radius
+  padding: 8px 16px;
+  border-radius: 24px;
   z-index: 1;
 `
 
 // Tooltip component to display all recipients
-export const RecipientTooltip: React.FC<{ recipients: string[], isVisible: boolean }> = ({
-  recipients,
-  isVisible,
-}) => {
-  return (
-    <TooltipWrapper style={{ display: isVisible ? 'block' : 'none' }}>
-      <TooltipContent className="tooltip-content">
-        {recipients.join(', ')}
-      </TooltipContent>
-    </TooltipWrapper>
-  )
+export const RecipientTooltip: React.FC<{
+  recipients: string[]
+  isVisible: boolean
+}> = ({ recipients, isVisible }) => {
+  if (!isVisible) return null
+
+  return <TooltipWrapper>{recipients.join(', ')}</TooltipWrapper>
 }
 
 // Main Recipients Display component
@@ -68,10 +55,11 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
     let usedWidth = 0
     let visibleRecipients: string[] = []
 
-    // Measure recipients' widths to determine how many can be displayed
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i]
       const emailWidth = measureTextWidth(email, wrapperRef.current)
+
+      // Only add full email addresses that fit
       if (usedWidth + emailWidth <= availableWidth) {
         visibleRecipients.push(email)
         usedWidth += emailWidth
@@ -80,9 +68,15 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
       }
     }
 
-    // Calculate how many recipients are hidden
     const hiddenCount = recipients.length - visibleRecipients.length
-    setNumTruncated(hiddenCount)
+
+    // If only one recipient and it doesn't fully fit, allow it to be clipped
+    if (recipients.length === 1 && usedWidth > availableWidth) {
+      visibleRecipients = [recipients[0]]
+      setNumTruncated(0)
+    } else {
+      setNumTruncated(hiddenCount)
+    }
   }, [recipients])
 
   // Function to measure the width of text
@@ -103,13 +97,16 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
       {numTruncated > 0 && (
         <>
           , ...
-          <RecipientsBadge 
-            numTruncated={numTruncated} 
-            onMouseEnter={() => setIsTooltipVisible(true)} 
-            onMouseLeave={() => setIsTooltipVisible(false)} 
+          <RecipientsBadge
+            numTruncated={numTruncated}
+            onMouseEnter={() => setIsTooltipVisible(true)}
+            onMouseLeave={() => setIsTooltipVisible(false)}
           />
           {/* Tooltip to show all recipients */}
-          <RecipientTooltip recipients={recipients} isVisible={isTooltipVisible} />
+          <RecipientTooltip
+            recipients={recipients}
+            isVisible={isTooltipVisible}
+          />
         </>
       )}
     </RecipientsWrapper>
@@ -117,7 +114,6 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 }
 
 export default RecipientsDisplay
-
 
 /**
  * 
