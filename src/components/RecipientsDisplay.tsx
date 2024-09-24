@@ -67,28 +67,34 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
     // Measure the width of ', ...'
     const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
 
-    // Measure recipients' widths to determine how many can be displayed
+    // Calculate the width of the badge
+    const badgeText = `+${recipients.length - newVisibleRecipients.length}`
+    const badgeWidth = measureTextWidth(badgeText, wrapperRef.current)
+
+    // Iterate through the recipients and decide what to show
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i] // Current recipient email
       const emailWidth = measureTextWidth(email, wrapperRef.current) // Measure email width
 
-      // Check if adding this email plus the ellipsis would overflow
-      if (usedWidth + emailWidth + ellipsisWidth <= availableWidth) {
-        newVisibleRecipients.push(email) // Add email to visible recipients
-        usedWidth += emailWidth // Update used width
-      } else {
-        break // Exit loop if overflow occurs
+      // Calculate the remaining space needed for ellipsis and badge
+      const remainingSpace = availableWidth - usedWidth
+
+      if (
+        i === recipients.length - 1 ||
+        remainingSpace < emailWidth + ellipsisWidth + badgeWidth
+      ) {
+        // If there is no space for the last recipient or current email with ellipsis and badge
+        break
       }
+
+      // Add email to visible recipients and update the used width
+      newVisibleRecipients.push(email)
+      usedWidth += emailWidth
     }
 
-    // Check if adding the ellipsis and badge would overflow
+    // Check if there is enough space for the ellipsis and badge, if not, trim more
     const totalWidthWithEllipsisAndBadge =
-      usedWidth +
-      ellipsisWidth +
-      measureTextWidth(
-        `+${recipients.length - newVisibleRecipients.length}`,
-        wrapperRef.current,
-      )
+      usedWidth + ellipsisWidth + badgeWidth
 
     if (
       totalWidthWithEllipsisAndBadge > availableWidth &&
@@ -152,3 +158,33 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 }
 
 export default RecipientsDisplay
+
+
+//////// track screen size /////
+
+export const ScreenSizeTracker: React.FC = () => {
+  const [width, setWidth] = useState<number>(window.innerWidth)
+  const [height, setHeight] = useState<number>(window.innerHeight)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth)
+      setHeight(window.innerHeight)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return (
+    <div>
+      <p>
+        Current screen size: {width}px x {height}px
+      </p>
+    </div>
+  )
+}
