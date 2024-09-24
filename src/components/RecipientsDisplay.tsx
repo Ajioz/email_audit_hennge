@@ -52,31 +52,31 @@ export const RecipientTooltip: React.FC<{
 const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
   recipients,
 }) => {
-  const [numTruncated, setNumTruncated] = useState(0)
-  const [isTooltipVisible, setIsTooltipVisible] = useState(false)
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const [numTruncated, setNumTruncated] = useState(0) // State for number of truncated recipients
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false) // State for tooltip visibility
+  const wrapperRef = useRef<HTMLDivElement>(null) // Ref for the wrapper element
 
   useEffect(() => {
-    if (!wrapperRef.current) return
+    if (!wrapperRef.current) return // Exit if ref is not set
 
-    const availableWidth = wrapperRef.current.clientWidth
-    let usedWidth = 0
-    let visibleRecipients: string[] = []
+    const availableWidth = wrapperRef.current.clientWidth // Get available width
+    let usedWidth = 0 // Initialize used width
+    let visibleRecipients: string[] = [] // Array for visible recipients
 
     // Measure the width of ', ...'
     const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
 
     // Measure recipients' widths to determine how many can be displayed
     for (let i = 0; i < recipients.length; i++) {
-      const email = recipients[i]
-      const emailWidth = measureTextWidth(email, wrapperRef.current)
+      const email = recipients[i] // Current recipient email
+      const emailWidth = measureTextWidth(email, wrapperRef.current) // Measure email width
 
       // Check if adding this email plus the ellipsis would overflow
       if (usedWidth + emailWidth + ellipsisWidth <= availableWidth) {
-        visibleRecipients.push(email)
-        usedWidth += emailWidth
+        visibleRecipients.push(email) // Add email to visible recipients
+        usedWidth += emailWidth // Update used width
       } else {
-        break
+        break // Exit loop if overflow occurs
       }
     }
 
@@ -85,23 +85,23 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 
     // If only one recipient and it doesn't fully fit, allow it to be clipped
     if (recipients.length === 1 && usedWidth > availableWidth) {
-      visibleRecipients = [recipients[0]]
-      setNumTruncated(0)
+      visibleRecipients = [recipients[0]] // Allow single recipient to be shown
+      setNumTruncated(0) // No truncation
     } else {
-      setNumTruncated(hiddenCount)
+      setNumTruncated(hiddenCount) // Set number of truncated recipients
     }
-  }, [recipients])
+  }, [recipients]) // Dependency on recipients array
 
   // Function to measure the width of text
   const measureTextWidth = (text: string, element: HTMLDivElement) => {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    const style = window.getComputedStyle(element)
+    const canvas = document.createElement('canvas') // Create a canvas element
+    const context = canvas.getContext('2d') // Get 2D context
+    const style = window.getComputedStyle(element) // Get computed styles of the element
     if (context && style) {
-      context.font = `${style.fontSize} ${style.fontFamily}`
-      return context.measureText(text).width
+      context.font = `${style.fontSize} ${style.fontFamily}` // Set font for measurement
+      return context.measureText(text).width // Measure and return text width
     }
-    return 0
+    return 0 // Return 0 if context is not available
   }
 
   return (
@@ -123,14 +123,14 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
       {numTruncated > 0 && (
         <>
           <RecipientsBadge
-            numTruncated={numTruncated}
-            onMouseEnter={() => setIsTooltipVisible(true)}
-            onMouseLeave={() => setIsTooltipVisible(false)}
+            numTruncated={numTruncated} // Pass number of truncated recipients
+            onMouseEnter={() => setIsTooltipVisible(true)} // Show tooltip on mouse enter
+            onMouseLeave={() => setIsTooltipVisible(false)} // Hide tooltip on mouse leave
           />
           {/* Tooltip to show all recipients */}
           <RecipientTooltip
-            recipients={recipients}
-            isVisible={isTooltipVisible}
+            recipients={recipients} // Pass all recipients to tooltip
+            isVisible={isTooltipVisible} // Pass tooltip visibility state
           />
         </>
       )}
@@ -139,57 +139,3 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 }
 
 export default RecipientsDisplay
-
-/**
- * 
-
-# Challenge Details
-
-Development of an `Email Audit` system is currently in progress. Assume that this project is a real project and is being used in a production environment on a trial basis, since the features are not yet complete.
-
-As the first assignment, two UI elements need to be implemented:
-
-- The first one is called `RecipientsDisplay`, it is a table cell that is used to intelligently show email recipients inside the `AuditTable` component. This cell will trim recipients that are too long to display in the table.
-- The second element is called `RecipientTooltip`, a tooltip-like component that will be used to display all of the email recipients, even ones that are trimmed in the table cell.
-
-The task is to implement these UI elements in the `RecipientsDisplay` file within any of the included frameworks. Modifying or adding new props, re-ordering the recipients, and adding new or extra functionalities and features are not allowed in this assignment. Additionally, the component needs to be written in **Typescript**.
-
-## `RecipientsDisplay`
-
-Assume that an employee can send an email to many recipients. Due to the limited amount of space, the information has to be displayed well. The design team has come up with the following design specifications:
-
-- If all the email addresses in the recipients list fit in the available space, display them as they are, delimited by a comma and space (e.g. `John.Smith@gmail.com, Jane.Smith@outlook.com`).
-- If there is not enough space to display the entire recipients list, it must be trimmed. To prevent showing clipped email addresses that are hard to read, show only the portion of the recipients list that does fit. In other words, if the entirety of an email address does not fit, it must not be shown.
-- If the recipients list has been trimmed (i.e. at least one email address is not shown), add `, ...` after the last email address shown. Furthermore, the rightmost end of the column must indicate the number of trimmed recipients with the provided `RecipientsBadge` component.
-- A special case is given to the first recipient. If there is not enough space to fit even the first recipient's email address, the email address is allowed to be clipped with an ellipsis. If there is only one recipient, a badge must not be shown. If there is more than one recipient, the first recipient must be excluded from the number of trimmed recipients in the badge.
-- This functionality should work on any screen size and when the screen is resized. For simplicity, this will only be tested in a recent version of a `Chromium` browser.
-- For the element that holds the list of recipients, the `display` must be set to `flex` and the `align-items` property must be set to `center` to ensure alignment correctness.
-- Do not modify or add new props to the `RecipientsBadge` component.
-- Do not re-order the recipients.
-- Do not add new/extra functionalities and features.
-
-## `RecipientsTooltip`
-
-Assume a use-case exists where the entirety of a recipient list must be made visible. The solution provided by the design team is to show the full list of the recipients at the **top right** corner of the viewport.
-
-- The recipients list must be shown in a tooltip at the **top right** corner of the viewport.
-- The tooltip must only be shown when the user hovers over a `RecipientsBadge` component.
-- The tooltip must not be shown if the user is not hovering over a badge.
-- The tooltip must display **`all of the email addresses in the recipients list, delimited by a comma and space`** (e.g. `John.Smith@gmail.com, Jane.Smith@outlook.com`).
-- Assume that the viewport is wide enough to show the tooltip without any truncation.
-- Do not create a new file, the tooltip must be located inside the `RecipientsDisplay` file.
-- Do not re-order the recipients, display them as they are.
-- Do not add new/extra functionalities and features.
-- The tooltip should have the following styles:
-  - Margin from the top right corner of the viewport is `8px`.
-  - Padding top and bottom are `8px`.
-  - Padding left and right are `16px`.
-  - Background color is `#666`.
-  - Text color is `#f0f0f0`.
-  - Border radius is `24px`.
-  - The `display` property must be set to `flex` and the `align-items` property must be set to `center` to ensure alignment correctness.
-
-
-
-
- */
