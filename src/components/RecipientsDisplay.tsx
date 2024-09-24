@@ -1,17 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
-import RecipientsBadge from './RecipientsBadge' // Assuming the badge is coming from here
+import RecipientsBadge from './RecipientsBadge'
 
 // Props for RecipientsDisplay
 type RecipientsDisplayProps = {
   recipients: string[]
 }
 
-// Wrapper for Recipients Display
+// Wrapper for the whole Recipients Display, flex ensures the badge is aligned far right
 const RecipientsWrapper = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between; // Added to align items correctly
+  justify-content: space-between; // Ensure the badge is on the far right
+  white-space: nowrap;
+  overflow: hidden;
+`
+
+// Container for the recipient list
+const RecipientsListWrapper = styled.div`
+  display: inline-block;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -56,11 +63,16 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
     let usedWidth = 0
     let visibleRecipients: string[] = []
 
+    // Measure the width of ', ...'
+    const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
+
+    // Measure recipients' widths to determine how many can be displayed
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i]
       const emailWidth = measureTextWidth(email, wrapperRef.current)
-      // Only add full email addresses that fit
-      if (usedWidth + emailWidth <= availableWidth || (i === 0 && usedWidth + emailWidth + measureTextWidth('...', wrapperRef.current) <= availableWidth)) {
+
+      // Check if adding this email plus the ellipsis would overflow
+      if (usedWidth + emailWidth + ellipsisWidth <= availableWidth) {
         visibleRecipients.push(email)
         usedWidth += emailWidth
       } else {
@@ -68,6 +80,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
       }
     }
 
+    // Calculate how many recipients are hidden
     const hiddenCount = recipients.length - visibleRecipients.length
 
     // If only one recipient and it doesn't fully fit, allow it to be clipped
@@ -93,10 +106,22 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 
   return (
     <RecipientsWrapper ref={wrapperRef}>
-      {recipients.slice(0, recipients.length - numTruncated).join(', ')}
+      {/* This section handles the recipients display and truncation */}
+      <RecipientsListWrapper>
+        {recipients.length === 1 ? (
+          // Special case for a single recipient, truncate it with ellipsis if necessary
+          <span>{recipients[0]}</span>
+        ) : (
+          <>
+            {recipients.slice(0, recipients.length - numTruncated).join(', ')}
+            {numTruncated > 0 && ', ...'}
+          </>
+        )}
+      </RecipientsListWrapper>
+
+      {/* The RecipientsBadge remains fixed on the far right */}
       {numTruncated > 0 && (
         <>
-          , ...
           <RecipientsBadge
             numTruncated={numTruncated}
             onMouseEnter={() => setIsTooltipVisible(true)}
