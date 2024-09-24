@@ -54,6 +54,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 }) => {
   const [numTruncated, setNumTruncated] = useState(0) // State for number of truncated recipients
   const [isTooltipVisible, setIsTooltipVisible] = useState(false) // State for tooltip visibility
+  const [visibleRecipients, setVisibleRecipients] = useState<string[]>([]) // State for visible recipients
   const wrapperRef = useRef<HTMLDivElement>(null) // Ref for the wrapper element
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 
     const availableWidth = wrapperRef.current.clientWidth // Get available width
     let usedWidth = 0 // Initialize used width
-    let visibleRecipients: string[] = [] // Array for visible recipients
+    let newVisibleRecipients: string[] = [] // Array for visible recipients
 
     // Measure the width of ', ...'
     const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
@@ -73,23 +74,35 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
 
       // Check if adding this email plus the ellipsis would overflow
       if (usedWidth + emailWidth + ellipsisWidth <= availableWidth) {
-        visibleRecipients.push(email) // Add email to visible recipients
+        newVisibleRecipients.push(email) // Add email to visible recipients
         usedWidth += emailWidth // Update used width
       } else {
         break // Exit loop if overflow occurs
       }
     }
 
-    // Calculate how many recipients are hidden
-    const hiddenCount = recipients.length - visibleRecipients.length
+    // Check if adding the ellipsis and badge would overflow
+    const totalWidthWithEllipsisAndBadge =
+      usedWidth +
+      ellipsisWidth +
+      measureTextWidth(
+        `+${recipients.length - newVisibleRecipients.length}`,
+        wrapperRef.current,
+      )
 
-    // If only one recipient and it doesn't fully fit, allow it to be clipped
-    if (recipients.length === 1 && usedWidth > availableWidth) {
-      visibleRecipients = [recipients[0]] // Allow single recipient to be shown
-      setNumTruncated(0) // No truncation
-    } else {
-      setNumTruncated(hiddenCount) // Set number of truncated recipients
+    if (
+      totalWidthWithEllipsisAndBadge > availableWidth &&
+      newVisibleRecipients.length > 0
+    ) {
+      // Remove the last visible email if it doesn't fully fit
+      newVisibleRecipients.pop()
     }
+
+    // Calculate how many recipients are hidden
+    const hiddenCount = recipients.length - newVisibleRecipients.length
+
+    setVisibleRecipients(newVisibleRecipients) // Update state with visible recipients
+    setNumTruncated(hiddenCount) // Set number of truncated recipients
   }, [recipients]) // Dependency on recipients array
 
   // Function to measure the width of text
@@ -113,7 +126,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
           <span>{recipients[0]}</span>
         ) : (
           <>
-            {recipients.slice(0, recipients.length - numTruncated).join(', ')}
+            {visibleRecipients.join(', ')}
             {numTruncated > 0 && ', ...'}
           </>
         )}
