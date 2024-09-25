@@ -24,7 +24,7 @@ const RecipientsListWrapper = styled.div`
   text-overflow: ellipsis;
 `
 
-// Tooltip Components
+// Tooltip Components style, using the design specification in the challenge detail
 const TooltipWrapper = styled.div`
   position: fixed;
   top: 8px;
@@ -38,11 +38,18 @@ const TooltipWrapper = styled.div`
   z-index: 1;
 `
 
-// Tooltip component to display all recipients
-export const RecipientTooltip: React.FC<{
+
+// Props interface for ToolTipDisplay
+type ToolTipInterface = {
   recipients: string[]
   isVisible: boolean
-}> = ({ recipients, isVisible }) => {
+}
+
+// Tooltip component to display all recipients
+export const RecipientTooltip: React.FC<ToolTipInterface> = ({
+  recipients,
+  isVisible,
+}) => {
   if (!isVisible) return null
 
   return <TooltipWrapper>{recipients.join(', ')}</TooltipWrapper>
