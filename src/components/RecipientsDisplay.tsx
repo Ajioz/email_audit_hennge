@@ -56,26 +56,25 @@ export const RecipientTooltip: React.FC<ToolTipInterface> = ({
 }
 
 // Main Recipients Display component
-const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
-  recipients,
-}) => {
-  const [numTruncated, setNumTruncated] = useState(0) // State for number of truncated recipients
+const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
+  const [numTruncated, setNumTruncated] = useState(0) // State to track number of truncated recipients
   const [isTooltipVisible, setIsTooltipVisible] = useState(false) // State for tooltip visibility
   const [visibleRecipients, setVisibleRecipients] = useState<string[]>([]) // State for visible recipients
   const wrapperRef = useRef<HTMLDivElement>(null) // Ref for the wrapper element
 
   useEffect(() => {
-    if (!wrapperRef.current) return // Exit if ref is not set
+
+    if (!wrapperRef.current) return // Exit if ref is not not properly assigned to a DOM element
 
     const availableWidth = wrapperRef.current.clientWidth // Get available width
-    let usedWidth = 0 // Initialize used width
-    let newVisibleRecipients: string[] = [] // Array for visible recipients
+    let usedWidth = 0 // create occupied width and initialize to 0
+    let newVisibleRecipients: string[] = [] // create an Array for visible recipients
 
     // Measure the width of ', ...'
     const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
 
     // Calculate the width of the badge
-    const badgeText = `+${recipients.length - newVisibleRecipients.length}`
+    const badgeText = `+${recipients.length - newVisibleRecipients.length}` //consider to use Number instead
     const badgeWidth = measureTextWidth(badgeText, wrapperRef.current)
 
     // Iterate through the recipients and decide what to show
