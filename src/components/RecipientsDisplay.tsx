@@ -2,21 +2,21 @@ import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import RecipientsBadge from './RecipientsBadge'
 
-// Props for RecipientsDisplay
+// Props interface for RecipientsDisplay
 type RecipientsDisplayProps = {
   recipients: string[]
 }
 
-// Wrapper for the whole Recipients Display, flex ensures the badge is aligned far right
+// Wrapper for the whole Recipients Display, based on design specification, flex ensures the badge is aligned right
 const RecipientsWrapper = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between; // Ensure the badge is on the far right
+  justify-content: space-between; // Ensure the badge is on the far right as required
   white-space: nowrap;
   overflow: hidden;
 `
 
-// Container for the recipient list
+// Container for the recipient list, using the built in ellipsis approach in css rle
 const RecipientsListWrapper = styled.div`
   display: inline-block;
   overflow: hidden;
