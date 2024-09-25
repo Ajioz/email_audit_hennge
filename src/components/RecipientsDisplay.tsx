@@ -2,10 +2,6 @@ import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import RecipientsBadge from './RecipientsBadge'
 
-// Props interface for RecipientsDisplay
-type RecipientsDisplayProps = {
-  recipients: string[]
-}
 
 // Wrapper for the whole Recipients Display, based on design specification, flex ensures the badge is aligned right
 const RecipientsWrapper = styled.div`
@@ -55,6 +51,13 @@ export const RecipientTooltip: React.FC<ToolTipInterface> = ({
   return <TooltipWrapper>{recipients.join(', ')}</TooltipWrapper>
 }
 
+
+// Props interface for RecipientsDisplay
+type RecipientsDisplayProps = {
+  recipients: string[]
+}
+
+
 // Main Recipients Display component
 const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
   const [numTruncated, setNumTruncated] = useState(0) // State to track number of truncated recipients
@@ -74,7 +77,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
     const ellipsisWidth = measureTextWidth(', ...', wrapperRef.current)
 
     // Calculate the width of the badge
-    const badgeText = `+${recipients.length - newVisibleRecipients.length}` //consider to use Number instead
+    const badgeText = `+${recipients.length - newVisibleRecipients.length}`
     const badgeWidth = measureTextWidth(badgeText, wrapperRef.current)
 
     // Iterate through the recipients and decide what to show
