@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import RecipientsBadge from './RecipientsBadge'
 
-
 // Wrapper for the whole Recipients Display, based on design specification, flex ensures the badge is aligned right
 const RecipientsWrapper = styled.div`
   display: flex;
@@ -34,7 +33,6 @@ const TooltipWrapper = styled.div`
   z-index: 1;
 `
 
-
 // Props interface for ToolTipDisplay
 type ToolTipInterface = {
   recipients: string[]
@@ -51,43 +49,47 @@ export const RecipientTooltip: React.FC<ToolTipInterface> = ({
   return <TooltipWrapper>{recipients.join(', ')}</TooltipWrapper>
 }
 
-
 // Props interface for RecipientsDisplay
 type RecipientsDisplayProps = {
   recipients: string[]
 }
 
-
 // Main Recipients Display component
-const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
+const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
+  recipients,
+}) => {
   const [numTruncated, setNumTruncated] = useState(0) // State to track number of truncated recipients
   const [toolTip, setToolTip] = useState(false) // State for tooltip visibility
   const [visibleRecipients, setVisibleRecipients] = useState<string[]>([]) // State for visible recipients
-  const wrapperRef = useRef<HTMLDivElement>(null) // Ref for the wrapper element
+  const rowRef = useRef<HTMLDivElement>(null) // Ref for the wrapper element
 
   useEffect(() => {
+    if (!rowRef.current) return // Exit if ref is not not properly assigned to a DOM element
 
-    if (!wrapperRef.current) return // Exit if ref is not not properly assigned to a DOM element
-
-    const available_width = wrapperRef.current.clientWidth // Get available width
-    let usedWidth = 0 // create occupied width and initialize to 0
+    const available_width = rowRef.current.clientWidth // Get available width
+    let occupied_width = 0 // create occupied width and initialize to 0
     let newVisibleRecipients: string[] = [] // create an Array for visible recipients
 
     // Measure the width of ', ...'
-    const ellipsis_length = checkText_width(', ...', wrapperRef.current)
+    const ellipsis_length = checkText_width(', ...', rowRef.current)
 
     // Calculate the width of the badge
     const badgeText = `+${recipients.length - newVisibleRecipients.length}`
-    const badgeWidth = checkText_width(badgeText, wrapperRef.current)
+    const badgeWidth = checkText_width(badgeText, rowRef.current)
 
     // Iterate through the recipients and decide what to show
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i] // Current recipient email
-      const emailWidth = checkText_width(email, wrapperRef.current) // Measure the current email width
+      const emailWidth = checkText_width(email, rowRef.current) // Measure the current email width
 
       // Calculate the remaining space needed for ellipsis and badge
-      const spaceLeft = available_width - usedWidth
+      const spaceLeft = available_width - occupied_width
 
+      // if (spaceLeft < emailWidth + ellipsis_length + badgeWidth) {
+      //   // If there is no space for the current email with ellipsis and badge
+      //   if (i === recipients.length - 1) break // Break if it's the last recipient
+      // }
+      
       if (
         i === recipients.length - 1 ||
         spaceLeft < emailWidth + ellipsis_length + badgeWidth
@@ -98,12 +100,12 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
 
       // Add email to visible recipients and update the used width
       newVisibleRecipients.push(email)
-      usedWidth += emailWidth
+      occupied_width += emailWidth
     }
 
     // Check if there is enough space for the ellipsis and badge, if not, trim more
     const totalWidthWithEllipsisAndBadge =
-      usedWidth + ellipsis_length + badgeWidth
+      occupied_width + ellipsis_length + badgeWidth
 
     if (
       totalWidthWithEllipsisAndBadge > available_width &&
@@ -133,7 +135,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
   }
 
   return (
-    <RecipientsWrapper ref={wrapperRef}>
+    <RecipientsWrapper ref={rowRef}>
       {/* This section handles the recipients display and truncation */}
       <RecipientsListWrapper>
         {recipients.length === 1 ? (
@@ -167,5 +169,3 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
 }
 
 export default RecipientsDisplay
-
-
