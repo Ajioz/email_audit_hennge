@@ -83,7 +83,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
     // Iterate through the recipients and decide what to show
     for (let i = 0; i < recipients.length; i++) {
       const email = recipients[i] // Current recipient email
-      const emailWidth = measureTextWidth(email, wrapperRef.current) // Measure email width
+      const emailWidth = measureTextWidth(email, wrapperRef.current) // Measure the current email width
 
       // Calculate the remaining space needed for ellipsis and badge
       const remainingSpace = availableWidth - usedWidth
@@ -148,7 +148,7 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
       </RecipientsListWrapper>
 
       {/* The RecipientsBadge remains fixed on the far right */}
-      {numTruncated > 0 && (
+      {recipients.length > 1 && numTruncated > 0 && (
         <>
           <RecipientsBadge
             numTruncated={numTruncated} // Pass number of truncated recipients
