@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import RecipientsBadge from './RecipientsBadge'
 
-const RecipientsWrapper = styled.div`
+const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10,14 +10,14 @@ const RecipientsWrapper = styled.div`
   overflow: hidden;
 `
 
-const RecipientsListWrapper = styled.div`
+const WrapperList = styled.div`
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 `
 
-const TooltipWrapper = styled.div`
+const ToolTip = styled.div`
   position: fixed;
   top: 8px;
   right: 8px;
@@ -35,12 +35,12 @@ type ToolTipInterface = {
   isVisible: boolean
 }
 
-export const RecipientTooltip: React.FC<ToolTipInterface> = ({
+const RecipientTooltip: React.FC<ToolTipInterface> = ({
   recipients,
   isVisible,
 }) => {
   if (!isVisible) return null
-  return <TooltipWrapper>{recipients.join(', ')}</TooltipWrapper>
+  return <ToolTip>{recipients.join(', ')}</ToolTip>
 }
 
 type RecipientsDisplayProps = {
@@ -51,78 +51,46 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
   recipients,
 }) => {
   const [numTruncated, setNumTruncated] = useState(0)
-  const [toolTip, setToolTip] = useState(false)
+  const [isToolTipVisible, setIsToolTipVisible] = useState(false)
   const [visibleRecipients, setVisibleRecipients] = useState<string[]>([])
   const rowRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!rowRef.current) return
-    const available_width = rowRef.current.clientWidth
-    let occupied_width = 0
-    let newVisibleRecipients: string[] = []
-    const ellipsis_length = checkText_width(', ...', rowRef.current)
-    const badgeText = `+${recipients.length - newVisibleRecipients.length} +10`
-    const badgeWidth = checkText_width(badgeText, rowRef.current)
 
-    let stopLoop = false
+    const availableWidth = rowRef.current.clientWidth
+    let usedWidth = 0
+    const visibleList: string[] = []
+    const ellipsisWidth = getTextWidth(', ...', rowRef.current)
+    const badgeText = `+${recipients.length - visibleList.length} + 10`
+    const badgeWidth = getTextWidth(badgeText, rowRef.current)
 
-    //  determines which recipients can be displayed without exceeding the width
-    recipients.forEach((email, i) => {
-      if (stopLoop) return
-      if (!rowRef.current) return
-      const emailWidth = checkText_width(email, rowRef.current)
-      const spaceLeft = available_width - occupied_width
+    for (let i = 0; i < recipients.length; i++) {
+      const emailWidth = getTextWidth(recipients[i], rowRef.current)
+      const remainingSpace = availableWidth - usedWidth
 
-      if (
-        i === recipients.length - 1 ||
-        spaceLeft < emailWidth + ellipsis_length + badgeWidth
-      ) {
-        stopLoop = true
-        return
-      }
+      if (remainingSpace < emailWidth + ellipsisWidth + badgeWidth) break
 
-      newVisibleRecipients.push(email)
-      occupied_width += emailWidth
-    })
-
-    /**
-     *  for (let i = 0; i < recipients.length; i++) {
-      const email = recipients[i]
-      const emailWidth = checkText_width(email, rowRef.current)
-      const spaceLeft = available_width - occupied_width
-
-      if (
-        i === recipients.length - 1 ||
-        spaceLeft < emailWidth + ellipsis_length + badgeWidth
-      ) {
-        break
-      }
-
-      newVisibleRecipients.push(email)
-      occupied_width += emailWidth
+      visibleList.push(recipients[i])
+      usedWidth += emailWidth
     }
-     */
-
-    const totalWidthWithEllipsisAndBadge =
-      occupied_width + ellipsis_length + badgeWidth
 
     if (
-      totalWidthWithEllipsisAndBadge > available_width &&
-      newVisibleRecipients.length > 0
+      usedWidth + ellipsisWidth + badgeWidth > availableWidth &&
+      visibleList.length > 0
     ) {
-      newVisibleRecipients.pop()
+      visibleList.pop()
     }
 
-    const hiddenCount = recipients.length - newVisibleRecipients.length
-    setVisibleRecipients(newVisibleRecipients)
-    setNumTruncated(hiddenCount)
+    setVisibleRecipients(visibleList)
+    setNumTruncated(recipients.length - visibleList.length)
   }, [recipients])
 
-  const checkText_width = (text: string, element: HTMLDivElement) => {
+  const getTextWidth = (text: string, element: HTMLDivElement) => {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')
-    const style = window.getComputedStyle(element)
-    if (context && style) {
+    if (context) {
+      const style = window.getComputedStyle(element)
       context.font = `${style.fontSize} ${style.fontFamily}`
       return context.measureText(text).width
     }
@@ -130,8 +98,8 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
   }
 
   return (
-    <RecipientsWrapper ref={rowRef}>
-      <RecipientsListWrapper>
+    <Wrapper ref={rowRef}>
+      <WrapperList>
         {recipients.length === 1 ? (
           <span>{recipients[0]}</span>
         ) : (
@@ -140,19 +108,22 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
             {numTruncated > 0 && ', ...'}
           </>
         )}
-      </RecipientsListWrapper>
+      </WrapperList>
 
       {recipients.length > 1 && numTruncated > 0 && (
         <>
           <RecipientsBadge
             numTruncated={numTruncated}
-            onMouseEnter={() => setToolTip(true)}
-            onMouseLeave={() => setToolTip(false)}
+            onMouseEnter={() => setIsToolTipVisible(true)}
+            onMouseLeave={() => setIsToolTipVisible(false)}
           />
-          <RecipientTooltip recipients={recipients} isVisible={toolTip} />
+          <RecipientTooltip
+            recipients={recipients}
+            isVisible={isToolTipVisible}
+          />
         </>
       )}
-    </RecipientsWrapper>
+    </Wrapper>
   )
 }
 
