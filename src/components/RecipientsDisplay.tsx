@@ -61,14 +61,15 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
     let occupied_width = 0
     let newVisibleRecipients: string[] = []
     const ellipsis_length = checkText_width(', ...', rowRef.current)
-    const badgeText = `+${recipients.length - newVisibleRecipients.length}`
+    const badgeText = `+${recipients.length - newVisibleRecipients.length} +10`
     const badgeWidth = checkText_width(badgeText, rowRef.current)
 
-    let stopLoop = false // Flag to control the loop
+    let stopLoop = false
 
+    //  determines which recipients can be displayed without exceeding the width
     recipients.forEach((email, i) => {
-      if (stopLoop) return // Exit if the flag is set
-      if (!rowRef.current) return // Exit if rowRef.current is null
+      if (stopLoop) return
+      if (!rowRef.current) return
       const emailWidth = checkText_width(email, rowRef.current)
       const spaceLeft = available_width - occupied_width
 
@@ -76,8 +77,8 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
         i === recipients.length - 1 ||
         spaceLeft < emailWidth + ellipsis_length + badgeWidth
       ) {
-        stopLoop = true // Set the flag to stop further processing
-        return // Exit the current iteration
+        stopLoop = true
+        return
       }
 
       newVisibleRecipients.push(email)
