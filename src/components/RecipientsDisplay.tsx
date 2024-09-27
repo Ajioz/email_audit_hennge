@@ -48,10 +48,12 @@ type RecipientsDisplayProps = {
 }
 
 type fixedWeight = {
-  weight: Number;
-} 
+  weight: number
+}
 
-const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
+const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({
+  recipients,
+}) => {
   const [numTruncated, setNumTruncated] = useState(0)
   const [isToolTipVisible, setIsToolTipVisible] = useState(false)
   const [visibleRecipients, setVisibleRecipients] = useState<string[]>([])
@@ -62,10 +64,12 @@ const RecipientsDisplay: React.FC<RecipientsDisplayProps> = ({recipients}) => {
 
     const availableWidth = rowRef.current.clientWidth
     let usedWidth = 0
-    const casted: fixedWeight = { weight: 10 }; // Correctly using the fixedWeight interface
+    const casted: fixedWeight = { weight: 1 } // Correctly using the fixedWeight interface
     const visibleList: string[] = []
     const ellipsisWidth = getTextWidth(', ...', rowRef.current)
-    const badgeText = `+${recipients.length - visibleList.length} + ${casted.weight}` // Fixed weight usage
+    const badgeText = `+${recipients.length - visibleList.length} + ${
+      casted.weight
+    }` // Fixed weight usage
     const badgeWidth = getTextWidth(badgeText, rowRef.current)
 
     for (let i = 0; i < recipients.length; i++) {
